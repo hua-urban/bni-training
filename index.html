@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>BNI 華都更分會｜培訓進度回報</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=Noto+Sans+TC:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0d0b;
+    --paper: #1c1a14;
+    --ink: #ede6d3;
+    --ink-dim: #9a917a;
+    --gold: #c9a961;
+    --gold-bright: #e8c97a;
+    --gold-deep: #8a7440;
+    --crimson: #b04a3a;
+    --green: #7fae6a;
+    --line: #2a261c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 48px 20px 100px;
+  }
+
+  header { text-align: center; margin-bottom: 32px; }
+
+  .eyebrow {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--gold);
+    font-size: 16px;
+    letter-spacing: 0.12em;
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 900;
+    font-size: clamp(26px, 6vw, 34px);
+    line-height: 1.3;
+    background: linear-gradient(180deg, var(--ink) 0%, var(--gold-bright) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .notice {
+    background: var(--paper);
+    border: 1px solid var(--gold-deep);
+    border-left: 3px solid var(--gold);
+    padding: 18px 20px;
+    margin-bottom: 28px;
+    font-size: 13.5px;
+    color: var(--ink-dim);
+    line-height: 1.8;
+  }
+
+  .notice strong { color: var(--gold-bright); font-weight: 500; }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 28px 24px;
+    margin-bottom: 20px;
+  }
+
+  .field-label {
+    font-family: 'Noto Serif TC', serif;
+    color: var(--gold);
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  select#nameSelect {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--gold-deep);
+    color: var(--ink);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 17px;
+    padding: 12px 14px;
+    outline: none;
+  }
+
+  select#nameSelect:focus { border-color: var(--gold-bright); }
+
+  #statusHint {
+    margin-top: 12px;
+    font-size: 12.5px;
+    color: var(--ink-dim);
+    min-height: 18px;
+  }
+
+  #courseCard { display: none; }
+  #courseCard.visible { display: block; }
+
+  .course-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 4px;
+    border-bottom: 1px dashed var(--line);
+    cursor: pointer;
+  }
+
+  .course-item:last-of-type { border-bottom: none; }
+
+  .course-item input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    accent-color: var(--gold);
+    cursor: pointer;
+  }
+
+  .course-item label {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 16px;
+    color: var(--ink);
+    cursor: pointer;
+    flex: 1;
+  }
+
+  textarea#noteInput {
+    width: 100%;
+    margin-top: 20px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 14px;
+    padding: 12px 14px;
+    min-height: 72px;
+    resize: vertical;
+    outline: none;
+  }
+
+  textarea#noteInput:focus { border-color: var(--gold-deep); }
+
+  .submit-section { text-align: center; margin-top: 8px; }
+
+  .submit-btn {
+    width: 100%;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    padding: 16px;
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .submit-btn:hover { background: var(--gold-bright); }
+
+  .submit-btn:disabled {
+    background: var(--line);
+    color: var(--ink-dim);
+    cursor: not-allowed;
+  }
+
+  .status-msg {
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--ink-dim);
+    min-height: 20px;
+  }
+
+  .status-msg.success { color: var(--green); }
+  .status-msg.error { color: #d96a58; }
+
+  @media (max-width: 500px) {
+    .container { padding: 32px 16px 80px; }
+    .card { padding: 22px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="eyebrow">BNI Hua Urban+ Renewal Chapter</div>
+    <h1>培訓進度回報</h1>
+  </header>
+
+  <div class="notice">
+    這份是<strong>總部目前的培訓記錄</strong>，可能有錯或漏登（例如：實際已經上過課，但總部系統沒登記到）。<br><br>
+    請選自己的名字，對照下方 5 堂課，把<strong>你「實際上完」的課</strong>勾選正確後送出即可，不用等別人。<br><br>
+    可以重複送出更新，之後再補都沒問題，系統一律以你<strong>最新一次送出</strong>為準。
+  </div>
+
+  <div class="card">
+    <span class="field-label">請選擇你的姓名</span>
+    <select id="nameSelect">
+      <option value="" selected disabled>—— 請選擇 ——</option>
+    </select>
+    <div id="statusHint"></div>
+  </div>
+
+  <div class="card" id="courseCard">
+    <span class="field-label">已完成的課程（依實際狀況勾選/取消）</span>
+    <div id="courseList"></div>
+    <textarea id="noteInput" placeholder="更正說明（選填，例如：MSP 是 3/12 場次上的，總部可能漏登）"></textarea>
+
+    <div class="submit-section">
+      <button class="submit-btn" id="submitBtn">送出 / 更新</button>
+      <div class="status-msg" id="statusMsg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ⬇⬇⬇  只有這一行需要你動！  ⬇⬇⬇
+   把下面引號中的內容，換成你的 Google Apps Script 網頁應用程式網址
+   （教學文件 STEP 2 會教你怎麼拿到這串網址，長得像
+    https://script.google.com/macros/s/AKfycb..../exec ）
+   ============================================================ */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwH2PRrkEtuAsr0SPxu8DzA-xlBhjhMN3rYaaz2oNvC5nYpfuvf64hscHfwC6k1P9QuPg/exec";
+/* ============================================================
+   ⬆⬆⬆  只有這一行需要你動！  ⬆⬆⬆
+   ============================================================ */
+
+// 5 堂課固定順序，跟 Code.gs 的 COURSE_KEYS 完全對齊，不要單獨調整順序。
+const COURSES = [
+  { key: 'msp', label: 'MSP' },
+  { key: 'oneOnOne', label: '一對一工作坊' },
+  { key: 'pt', label: 'PT工作坊' },
+  { key: 'referral', label: '引薦工作坊' },
+  { key: 'presentation', label: '簡報工作坊' }
+];
+
+// 內嵌 seed（跟 Code.gs 的 ROSTER 同一份資料）：
+// 用途 1／部署前預覽 UI（未接 GAS 也能選名字看到預勾狀態）
+// 用途 2／GAS 還沒回應前的樂觀顯示，不用等網路
+// 正式部署後，實際狀態一律以 GAS 回傳的「目前狀態」為準（見 fetchStatus）。
+const ROSTER_SEED = {
+  '王常殷': [true, true, false, false, false],
+  '藍堂嘉': [false, true, false, false, false],
+  '劉羿岑': [true, true, false, false, false],
+  '陳向柔': [true, false, false, false, false],
+  '劉恩秀': [false, true, false, false, false],
+  '周以仁': [true, true, false, false, false],
+  '張瓊安': [true, true, true, true, false],
+  '高翊書': [true, true, false, false, false],
+  '王寶佳': [true, true, true, true, false],
+  '王春雄': [true, true, true, true, false],
+  '陳靖薇': [true, true, false, false, false],
+  '蘇瓜雅': [true, true, false, false, false],
+  '施宜妏': [true, false, false, false, false],
+  '莊大永': [true, true, false, false, false],
+  '莊涵勝': [true, true, false, false, false],
+  '黃冠霖': [true, false, false, false, false],
+  '諸紀平': [true, true, false, false, false],
+  '陳秒螢': [false, false, false, false, false],
+  '李艾莉': [true, true, false, false, false],
+  '莊慧劍': [false, false, false, false, false],
+  '吳翊辰': [true, false, true, false, false],
+  '黃郁婷': [true, false, false, false, false],
+  '林必涵': [false, true, true, false, false],
+  '蔡明璋': [true, true, true, true, false],
+  '王佳筠': [true, true, false, false, false],
+  '楊之慧': [true, true, false, false, false],
+  '陳黎玲': [true, false, true, false, false],
+  '林佩君': [true, false, false, false, false],
+  '林媜媁': [true, true, false, false, false],
+  '李慧如': [false, false, false, false, false],
+  '凃馨文': [true, true, false, false, false],
+  '柳慧燕': [true, false, true, false, false],
+  '宋馨巧': [false, true, false, false, false],
+  '張瑜晏': [false, false, false, false, false],
+  '陳昭男': [false, false, false, false, false],
+  '包育翎': [true, true, false, false, false],
+  '蔡岱達': [true, true, true, false, true],
+  '蔡淯思': [true, false, false, false, false],
+  '詹媛婷': [true, true, true, false, false],
+  '王雅慧': [true, false, false, false, false],
+  '何俊彥': [true, true, false, false, false],
+  '周育慈': [true, true, false, false, false],
+  '洪嘉璿左左': [false, false, false, false, false],
+  '鍾智媛': [true, false, false, false, false],
+  '黃建嘉': [false, true, false, false, false],
+  '林中群': [true, false, false, false, false],
+  '蔡馨葳': [true, true, false, false, false],
+  '林晏伃': [true, false, false, false, false],
+  '李瑞雲': [true, true, false, false, false],
+  '謝夢瑰': [true, true, false, false, false],
+  '楊淑媛': [true, true, false, false, false],
+  '張怡蘋': [true, true, true, false, false],
+  '張耕豪': [true, true, false, false, false],
+  '陳品攸': [true, true, false, false, false],
+  '吳念鎧': [true, false, false, false, false],
+  '沈瑞婷': [false, false, false, false, false],
+  '古育瑋': [false, false, false, false, false]
+};
+
+const NAMES = Object.keys(ROSTER_SEED);
+
+const nameSelect = document.getElementById('nameSelect');
+const statusHint = document.getElementById('statusHint');
+const courseCard = document.getElementById('courseCard');
+const courseList = document.getElementById('courseList');
+const noteInput = document.getElementById('noteInput');
+const submitBtn = document.getElementById('submitBtn');
+const statusMsg = document.getElementById('statusMsg');
+
+let currentName = '';
+
+// 下拉選單塞 57 人名單
+NAMES.forEach(name => {
+  const opt = document.createElement('option');
+  opt.value = name;
+  opt.textContent = name;
+  nameSelect.appendChild(opt);
+});
+
+function seedToCourses(seedArr) {
+  const courses = {};
+  COURSES.forEach((c, idx) => { courses[c.key] = !!seedArr[idx]; });
+  return courses;
+}
+
+function renderCourses(courses) {
+  courseList.innerHTML = COURSES.map(c => `
+    <div class="course-item" data-key="${c.key}">
+      <input type="checkbox" id="course-${c.key}" ${courses[c.key] ? 'checked' : ''}>
+      <label for="course-${c.key}">${c.label}</label>
+    </div>
+  `).join('');
+}
+
+function setStatusHint(text) {
+  statusHint.textContent = text;
+}
+
+// 破快取：fetch GAS 時帶時間戳 query + no-store，避免拿到舊回應
+async function fetchStatus(name) {
+  if (!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE_YOUR') !== -1) {
+    // 尚未部署 / 未貼網址 → 純預覽模式，直接用內嵌 seed
+    return {
+      source: 'seed',
+      courses: seedToCourses(ROSTER_SEED[name] || [false, false, false, false, false]),
+      note: '',
+      hint: '（預覽模式：尚未接上後端，顯示內建的總部原始記錄）'
+    };
+  }
+  try {
+    const url = SCRIPT_URL + '?name=' + encodeURIComponent(name) + '&t=' + Date.now();
+    const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+    const data = await res.json();
+    if (!data || !data.ok) throw new Error('bad response');
+    return data;
+  } catch (err) {
+    console.error(err);
+    return {
+      source: 'seed',
+      courses: seedToCourses(ROSTER_SEED[name] || [false, false, false, false, false]),
+      note: '',
+      hint: '（連不到後端，暫時顯示內建的總部原始記錄，送出前請確認勾選正確）'
+    };
+  }
+}
+
+nameSelect.addEventListener('change', async () => {
+  const name = nameSelect.value;
+  if (!name) return;
+  currentName = name;
+
+  // 先用內嵌 seed 立刻顯示（不用等網路），GAS 回應回來再視情況覆蓋成最新狀態
+  renderCourses(seedToCourses(ROSTER_SEED[name] || [false, false, false, false, false]));
+  noteInput.value = '';
+  courseCard.classList.add('visible');
+  statusMsg.textContent = '';
+  setStatusHint('載入目前狀態中...');
+
+  const status = await fetchStatus(name);
+  renderCourses(status.courses);
+  noteInput.value = status.note || '';
+
+  if (status.hint) {
+    setStatusHint(status.hint);
+  } else if (status.source === 'submitted') {
+    const t = status.updatedAt ? new Date(status.updatedAt).toLocaleString('zh-TW') : '';
+    setStatusHint('顯示你上次送出的紀錄' + (t ? '（' + t + '）' : '') + '，可以再修正後重新送出。');
+  } else {
+    setStatusHint('目前顯示：總部原始記錄，尚未有你送出過的紀錄。');
+  }
+});
+
+submitBtn.addEventListener('click', async () => {
+  if (!currentName) return;
+
+  if (!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE_YOUR') !== -1) {
+    statusMsg.textContent = '⚠️ 系統尚未設定完成（管理者：請貼上 Apps Script 網址）';
+    statusMsg.className = 'status-msg error';
+    return;
+  }
+
+  const courses = {};
+  COURSES.forEach(c => {
+    courses[c.key] = document.getElementById('course-' + c.key).checked;
+  });
+
+  const payload = {
+    name: currentName,
+    courses,
+    note: noteInput.value.trim(),
+    submittedAt: new Date().toISOString()
+  };
+
+  submitBtn.disabled = true;
+  statusMsg.textContent = '送出中...';
+  statusMsg.className = 'status-msg';
+
+  try {
+    // no-cors + text/plain：避開瀏覽器對 Apps Script 的 CORS 預檢，這是讓各種手機都能順利送出的關鍵寫法。
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+
+    // no-cors 模式下無法讀取回應內容，只要 fetch 沒拋錯就視為送達。
+    statusMsg.textContent = '✓ 已送出！感謝 ' + currentName + ' 更新培訓進度';
+    statusMsg.className = 'status-msg success';
+    setStatusHint('已送出，之後若還要再更正，直接重選姓名再送一次即可（以最新一次為準）。');
+  } catch (err) {
+    console.error(err);
+    statusMsg.textContent = '送出失敗，請檢查網路後再按一次';
+    statusMsg.className = 'status-msg error';
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+</script>
+
+</body>
+</html>
