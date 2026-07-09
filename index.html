@@ -377,12 +377,48 @@ const statusMsg = document.getElementById('statusMsg');
 
 let currentName = '';
 
-// 下拉選單塞 57 人名單，顯示文字加編號（1~57，依名冊順位）方便夥伴用編號找自己，
-// 但 option 的 value 一律保持乾淨姓名 —— 送後端 / 查詢都讀這個 value，不能帶編號。
+// 23 位有綽號的人：顯示文字要加「（綽號）」，key＝NAMES/ROSTER 裡原本的姓名字串。
+// 這份名單以外的人不補綽號。
+const NICKNAMES = {
+  '王常殷': 'Hubert',
+  '陳向柔': 'Naomi',
+  '劉恩秀': 'Joan',
+  '高翊書': 'Eason',
+  '王寶佳': 'Renee',
+  '王春雄': 'Jayson',
+  '陳秒螢': 'Emma',
+  '李艾莉': 'Aili',
+  '陳黎玲': 'Jossie',
+  '林媜媁': 'Wei',
+  '李慧如': 'Eva',
+  '凃馨文': 'Wen',
+  '蔡淯思': 'Mina',
+  '王雅慧': 'Peggy',
+  '周育慈': 'Anna',
+  '鍾智媛': 'Fiona',
+  '蔡馨葳': 'Mandy',
+  '李瑞雲': 'Grace',
+  '謝夢瑰': 'Dian',
+  '張怡蘋': 'April',
+  '藍堂嘉': '小虎',
+  '陳昭男': 'Johnny',
+  '洪嘉璿左左': '左左'
+};
+
+// 特例：「洪嘉璿左左」這個 NAMES 字串本身是「本名＋綽號」黏在一起，
+// 顯示要拆成「洪嘉璿（左左）」；value 仍用原字串（後端比對 key），不能動。
+const DISPLAY_NAME_OVERRIDE = {
+  '洪嘉璿左左': '洪嘉璿'
+};
+
+// 下拉選單塞 57 人名單，顯示文字加編號（1~57，依名冊順位）＋有綽號的人加（綽號），
+// 但 option 的 value 一律保持乾淨姓名 —— 送後端 / 查詢都讀這個 value，不能帶編號或綽號。
 NAMES.forEach((name, idx) => {
   const opt = document.createElement('option');
   opt.value = name;
-  opt.textContent = (idx + 1) + '. ' + name;
+  const displayName = DISPLAY_NAME_OVERRIDE[name] || name;
+  const nickname = NICKNAMES[name];
+  opt.textContent = (idx + 1) + '. ' + displayName + (nickname ? '（' + nickname + '）' : '');
   nameSelect.appendChild(opt);
 });
 
