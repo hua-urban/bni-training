@@ -136,6 +136,48 @@
     cursor: pointer;
   }
 
+  .course-item input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.75;
+  }
+
+  .course-item input[type="checkbox"]:disabled + label {
+    cursor: default;
+  }
+
+  .locked-banner {
+    display: none;
+    background: rgba(127, 174, 106, 0.12);
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-size: 13.5px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    line-height: 1.6;
+  }
+
+  .edit-btn {
+    display: none;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--gold-deep);
+    color: var(--gold-bright);
+    padding: 14px;
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    margin-bottom: 12px;
+    transition: all 0.25s;
+  }
+
+  .edit-btn:hover {
+    border-color: var(--gold-bright);
+    color: var(--gold-bright);
+    background: rgba(201, 169, 97, 0.08);
+  }
+
   .course-item label {
     font-family: 'Noto Serif TC', serif;
     font-size: 16px;
@@ -223,11 +265,13 @@
   </div>
 
   <div class="card" id="courseCard">
+    <div id="lockedBanner" class="locked-banner"></div>
     <span class="field-label">已完成的課程（依實際狀況勾選/取消）</span>
     <div id="courseList"></div>
     <textarea id="noteInput" placeholder="更正說明（選填，例如：MSP 是 3/12 場次上的，總部可能漏登）"></textarea>
 
     <div class="submit-section">
+      <button class="edit-btn" id="editBtn">要修改</button>
       <button class="submit-btn" id="submitBtn">送出 / 更新</button>
       <div class="status-msg" id="statusMsg"></div>
     </div>
@@ -327,15 +371,18 @@ const courseCard = document.getElementById('courseCard');
 const courseList = document.getElementById('courseList');
 const noteInput = document.getElementById('noteInput');
 const submitBtn = document.getElementById('submitBtn');
+const editBtn = document.getElementById('editBtn');
+const lockedBanner = document.getElementById('lockedBanner');
 const statusMsg = document.getElementById('statusMsg');
 
 let currentName = '';
 
-// 下拉選單塞 57 人名單
-NAMES.forEach(name => {
+// 下拉選單塞 57 人名單，顯示文字加編號（1~57，依名冊順位）方便夥伴用編號找自己，
+// 但 option 的 value 一律保持乾淨姓名 —— 送後端 / 查詢都讀這個 value，不能帶編號。
+NAMES.forEach((name, idx) => {
   const opt = document.createElement('option');
   opt.value = name;
-  opt.textContent = name;
+  opt.textContent = (idx + 1) + '. ' + name;
   nameSelect.appendChild(opt);
 });
 
@@ -345,10 +392,11 @@ function seedToCourses(seedArr) {
   return courses;
 }
 
-function renderCourses(courses) {
+// disabled=true 時 5 個 checkbox 全部鎖住（載入中 / 已回報鎖定用）
+function renderCourses(courses, disabled) {
   courseList.innerHTML = COURSES.map(c => `
     <div class="course-item" data-key="${c.key}">
-      <input type="checkbox" id="course-${c.key}" ${courses[c.key] ? 'checked' : ''}>
+      <input type="checkbox" id="course-${c.key}" ${courses[c.key] ? 'checked' : ''} ${disabled ? 'disabled' : ''}>
       <label for="course-${c.key}">${c.label}</label>
     </div>
   `).join('');
@@ -357,6 +405,75 @@ function renderCourses(courses) {
 function setStatusHint(text) {
   statusHint.textContent = text;
 }
+
+// updatedAt（ISO 時間字串）轉成好讀的台灣時間，例：2026/07/10 14:30；null/無效值回傳空字串
+function formatUpdatedAt(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleString('zh-TW', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  });
+}
+
+// 切換名字的當下立刻呼叫：清空+鎖住 5 個 checkbox 與送出鈕，顯示「載入中」，
+// 避免快速切換時使用者短暫看到上一個人殘留的勾選。
+function showLoadingState() {
+  const emptyCourses = {};
+  COURSES.forEach(c => { emptyCourses[c.key] = false; });
+  renderCourses(emptyCourses, true);
+  noteInput.value = '';
+  noteInput.disabled = true;
+  lockedBanner.style.display = 'none';
+  editBtn.style.display = 'none';
+  submitBtn.style.display = 'block';
+  submitBtn.disabled = true;
+  statusMsg.textContent = '';
+  setStatusHint('載入中...');
+}
+
+// fetch 回來後依 source 套用畫面：
+//   submitted（已回報過）→ 鎖定唯讀 + 顯示「要修改」按鈕
+//   seed（沒送過） → 正常可編輯表單
+function applyStatus(status) {
+  const locked = status.source === 'submitted';
+  renderCourses(status.courses, locked);
+  noteInput.value = status.note || '';
+  noteInput.disabled = locked;
+
+  if (locked) {
+    const t = formatUpdatedAt(status.updatedAt);
+    lockedBanner.textContent = '✅ 你已在' + (t ? ' ' + t + ' ' : '') + '回報過，目前紀錄如下：';
+    lockedBanner.style.display = 'block';
+    editBtn.style.display = 'block';
+    submitBtn.style.display = 'none';
+  } else {
+    lockedBanner.style.display = 'none';
+    editBtn.style.display = 'none';
+    submitBtn.style.display = 'block';
+    submitBtn.disabled = false;
+  }
+
+  if (status.hint) {
+    setStatusHint(status.hint);
+  } else if (locked) {
+    setStatusHint('紀錄有誤請按下方「要修改」重新編輯。');
+  } else {
+    setStatusHint('目前顯示：總部原始記錄，尚未有你送出過的紀錄。');
+  }
+}
+
+editBtn.addEventListener('click', () => {
+  document.querySelectorAll('#courseList input[type="checkbox"]').forEach(cb => { cb.disabled = false; });
+  noteInput.disabled = false;
+  lockedBanner.style.display = 'none';
+  editBtn.style.display = 'none';
+  submitBtn.style.display = 'block';
+  submitBtn.disabled = false;
+  setStatusHint('已解鎖，修改完畢後記得按「送出 / 更新」。');
+});
 
 // 破快取：fetch GAS 時帶時間戳 query + no-store，避免拿到舊回應
 async function fetchStatus(name) {
@@ -386,30 +503,25 @@ async function fetchStatus(name) {
   }
 }
 
+// requestToken：防止「快速切換名字」時，前一個人還沒 fetch 完就被切走，
+// 結果回來晚了反而覆蓋成上一個人的資料。每次切換都發新 token，
+// fetch 回來時比對 token，對不上就丟棄（使用者已經切到別人了）。
+let requestToken = 0;
+
 nameSelect.addEventListener('change', async () => {
   const name = nameSelect.value;
   if (!name) return;
   currentName = name;
+  const myToken = ++requestToken;
 
-  // 先用內嵌 seed 立刻顯示（不用等網路），GAS 回應回來再視情況覆蓋成最新狀態
-  renderCourses(seedToCourses(ROSTER_SEED[name] || [false, false, false, false, false]));
-  noteInput.value = '';
+  // 立刻鎖住＋清空，絕不能短暫顯示上一個人的殘留勾選
   courseCard.classList.add('visible');
-  statusMsg.textContent = '';
-  setStatusHint('載入目前狀態中...');
+  showLoadingState();
 
   const status = await fetchStatus(name);
-  renderCourses(status.courses);
-  noteInput.value = status.note || '';
+  if (myToken !== requestToken) return; // 使用者已經切到別人，這筆回應作廢
 
-  if (status.hint) {
-    setStatusHint(status.hint);
-  } else if (status.source === 'submitted') {
-    const t = status.updatedAt ? new Date(status.updatedAt).toLocaleString('zh-TW') : '';
-    setStatusHint('顯示你上次送出的紀錄' + (t ? '（' + t + '）' : '') + '，可以再修正後重新送出。');
-  } else {
-    setStatusHint('目前顯示：總部原始記錄，尚未有你送出過的紀錄。');
-  }
+  applyStatus(status);
 });
 
 submitBtn.addEventListener('click', async () => {
@@ -449,7 +561,9 @@ submitBtn.addEventListener('click', async () => {
     // no-cors 模式下無法讀取回應內容，只要 fetch 沒拋錯就視為送達。
     statusMsg.textContent = '✓ 已送出！感謝 ' + currentName + ' 更新培訓進度';
     statusMsg.className = 'status-msg success';
-    setStatusHint('已送出，之後若還要再更正，直接重選姓名再送一次即可（以最新一次為準）。');
+
+    // 樂觀鎖定：不用等重新 fetch，直接用剛送出的內容切換成「已回報」鎖定畫面
+    applyStatus({ source: 'submitted', courses, note: payload.note, updatedAt: payload.submittedAt });
   } catch (err) {
     console.error(err);
     statusMsg.textContent = '送出失敗，請檢查網路後再按一次';
